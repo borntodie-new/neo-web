@@ -70,7 +70,7 @@ func (r *router) getRouter(method string, pattern string) *node {
 		if child == nil {
 			return nil
 		}
-		if child.pattern != "" {
+		if child.pattern != "" && child.pattern == fmt.Sprintf("/%s", pattern) {
 			return child
 		}
 		root = child
@@ -80,8 +80,14 @@ func (r *router) getRouter(method string, pattern string) *node {
 
 func (r *router) handle(ctx *Context) {
 	// 请求来了，需要匹配路由
-	key := fmt.Sprintf("%s-%s", ctx.Method, ctx.URL)
 	log.Printf("Request %4s - %s", ctx.Method, ctx.URL)
+	n := r.getRouter(ctx.Method, ctx.URL)
+	if n == nil {
+		// 没有匹配到
+		ctx.String(http.StatusInternalServerError, "NOT FOUND")
+		return
+	}
+	key := fmt.Sprintf("%s-%s", ctx.Method, n.pattern)
 	handlerFunc, ok := r.handlers[key]
 	if !ok {
 		ctx.String(http.StatusInternalServerError, "NOT FOUND")
@@ -93,5 +99,5 @@ func (r *router) handle(ctx *Context) {
 }
 
 func newRouter() *router {
-	return &router{handlers: map[string]HandlerFunc{}}
+	return &router{roots: map[string]*node{}, handlers: map[string]HandlerFunc{}}
 }
