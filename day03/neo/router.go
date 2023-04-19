@@ -51,7 +51,7 @@ func (r *router) addRouter(method string, pattern string, handlerFunc HandlerFun
 				part: part,
 			}
 			// 如果part中带有 : 表示是模糊匹配，需要给节点的isWild设为true
-			if strings.HasPrefix(part, ":") {
+			if strings.HasPrefix(part, ":") || strings.HasPrefix(part, "*") {
 				child.isWild = true
 			}
 			root.children = append(root.children, child)
