@@ -4,6 +4,8 @@ import (
 	"net/http"
 )
 
+type H map[string]string
+
 // HandlerFunc 视图函数签名
 type HandlerFunc func(ctx *Context)
 
