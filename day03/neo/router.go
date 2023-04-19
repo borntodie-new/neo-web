@@ -42,6 +42,10 @@ func (r *router) addRouter(method string, pattern string, handlerFunc HandlerFun
 			child = &node{ // 这里不需要添加pattern字段，只有最底层的叶子节点才需要添加。我们统一在循环之后再添加
 				part: part,
 			}
+			// 如果part中带有 : 表示是模糊匹配，需要给节点的isWild设为true
+			if strings.HasPrefix(part, ":") {
+				child.isWild = true
+			}
 			root.children = append(root.children, child)
 		}
 		root = child // 查找到了child，沿着child继续查找
