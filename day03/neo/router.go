@@ -24,6 +24,14 @@ func (r *router) addRouter(method string, pattern string, handlerFunc HandlerFun
 		}
 		r.roots[method] = root
 	}
+	// 特殊处理根路由
+	if pattern == "/" {
+		root.pattern = pattern
+		key := fmt.Sprintf("%s-%s", method, pattern)
+		r.handlers[key] = handlerFunc
+		log.Printf("Add Router %4s - %s", method, pattern)
+		return
+	}
 	// pattern 必须以 / 开头
 	if !strings.HasPrefix(pattern, "/") {
 		panic("web: 路由必须以 / 开头")
@@ -62,22 +70,26 @@ func (r *router) getRouter(method string, pattern string) (*node, map[string]str
 	root, ok := r.roots[method]
 	if !ok {
 		// 路由树都不存在，直接返回nil
-		return nil, nil
+		return nil, params
+	}
+	// 特殊处理 根路由
+	if pattern == "/" {
+		return root, params
 	}
 	// 切割pattern
 	pattern = strings.Trim(pattern, "/")
 	parts := strings.Split(pattern, "/")
 	for _, part := range parts {
 		if part == "" {
-			return nil, nil
+			return nil, params
 		}
 		child := root.search(part)
 		if child == nil {
-			return nil, nil
+			return nil, params
 		}
 		// 将匹配到的带有:的路由添加到params中
 		if child.isWild {
-			params[part[1:]] = part
+			params[child.part[1:]] = part
 		}
 		// 1. child.pattern != ""这是精确匹配，但是还不够，有点缺陷
 		// 2. child.pattern == fmt.Sprintf("/%s", pattern) 这是精确匹配，搭配条件1才是完美
@@ -88,7 +100,7 @@ func (r *router) getRouter(method string, pattern string) (*node, map[string]str
 		}
 		root = child
 	}
-	return nil, nil
+	return nil, params
 }
 
 func (r *router) handle(ctx *Context) {
@@ -101,7 +113,7 @@ func (r *router) handle(ctx *Context) {
 		return
 	}
 	// 保存请求参数到Context上下文中
-	ctx.Params = params
+	ctx.params = params
 	key := fmt.Sprintf("%s-%s", ctx.Method, n.pattern)
 	handlerFunc, ok := r.handlers[key]
 	if !ok {
