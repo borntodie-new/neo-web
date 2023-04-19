@@ -1,27 +1,34 @@
 package main
 
 import (
-	"fmt"
 	"github.com/borntodie-new/neo-web/neo/neo"
 	"net/http"
 )
 
 func main() {
 	engine := neo.New()
-	engine.GET("/user", func(ctx *neo.Context) {
-		username := ctx.Query("username")
-		password := ctx.Query("password")
-		ctx.HTML(http.StatusOK, fmt.Sprintf("<h1>欢迎：%s</h1><br/><h1>你的密码是：%s<h1>", username, password))
+	engine.GET("/", func(ctx *neo.Context) {
+		ctx.HTML(http.StatusOK, "<h1>Hello Neo</h1>")
 	})
-	engine.POST("/login", func(ctx *neo.Context) {
-		username := ctx.PostForm("username")
-		password := ctx.PostForm("password")
-		ctx.JSON(http.StatusOK, struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}{
-			Username: username,
-			Password: password,
+	engine.GET("/hello", func(ctx *neo.Context) {
+		// expect /hello?name=neo
+		ctx.JSON(http.StatusOK, neo.H{
+			"code": "200",
+			"name": ctx.Query("name"),
+		})
+	})
+	engine.GET("/hello/:name", func(ctx *neo.Context) {
+		// expect /hello/neo
+		ctx.JSON(http.StatusOK, neo.H{
+			"code": "200",
+			"name": ctx.Params("name"),
+		})
+	})
+	engine.GET("/assets/*filepath", func(ctx *neo.Context) {
+		// expect /hello/neo
+		ctx.JSON(http.StatusOK, neo.H{
+			"code": "200",
+			"name": ctx.Params("filepath"),
 		})
 	})
 	_ = engine.Run(":8080")
