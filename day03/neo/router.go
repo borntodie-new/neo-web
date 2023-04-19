@@ -56,6 +56,9 @@ func (r *router) addRouter(method string, pattern string, handlerFunc HandlerFun
 			}
 			root.children = append(root.children, child)
 		}
+		if child.isWild {
+			panic("web: 模糊匹配冲突")
+		}
 		root = child // 查找到了child，沿着child继续查找
 	}
 	root.pattern = pattern
@@ -90,12 +93,13 @@ func (r *router) getRouter(method string, pattern string) (*node, map[string]str
 		// 将匹配到的带有:的路由添加到params中
 		if child.isWild {
 			// 完成*的模糊匹配
-			value := part
-			if strings.HasPrefix(child.part, "*") {
-				index := strings.Index(pattern, part)
-				value = pattern[index:]
+			// 这也是由优先级的
+			// : 优先级高于 *
+			if strings.HasPrefix(child.part, ":") {
+				params[child.part[1:]] = part
+			} else if strings.HasPrefix(child.part, "*") {
+				params[child.part[1:]] = pattern[strings.Index(pattern, part):]
 			}
-			params[child.part[1:]] = value
 		}
 		// 1. child.pattern != ""这是精确匹配，但是还不够，有点缺陷
 		// 2. child.pattern == fmt.Sprintf("/%s", pattern) 这是精确匹配，搭配条件1才是完美
