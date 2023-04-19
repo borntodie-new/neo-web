@@ -14,7 +14,12 @@ func (n *node) search(part string) *node {
 		n.children = make([]*node, 0)
 	}
 	for _, child := range n.children {
+		// 精确匹配，优先级高
 		if child.part == part {
+			return child
+		}
+		// 模糊匹配，优先级低
+		if child.isWild {
 			return child
 		}
 	}
