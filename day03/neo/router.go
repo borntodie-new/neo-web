@@ -57,29 +57,38 @@ func (r *router) addRouter(method string, pattern string, handlerFunc HandlerFun
 }
 
 // 匹配路由
-func (r *router) getRouter(method string, pattern string) *node {
+func (r *router) getRouter(method string, pattern string) (*node, map[string]string) {
+	params := make(map[string]string)
 	root, ok := r.roots[method]
 	if !ok {
 		// 路由树都不存在，直接返回nil
-		return nil
+		return nil, nil
 	}
 	// 切割pattern
 	pattern = strings.Trim(pattern, "/")
 	parts := strings.Split(pattern, "/")
 	for _, part := range parts {
 		if part == "" {
-			return nil
+			return nil, nil
 		}
 		child := root.search(part)
 		if child == nil {
-			return nil
+			return nil, nil
 		}
-		if child.pattern != "" && child.pattern == fmt.Sprintf("/%s", pattern) {
-			return child
+		// 将匹配到的带有:的路由添加到params中
+		if child.isWild {
+			params[part[1:]] = part
+		}
+		// 1. child.pattern != ""这是精确匹配，但是还不够，有点缺陷
+		// 2. child.pattern == fmt.Sprintf("/%s", pattern) 这是精确匹配，搭配条件1才是完美
+		// 上述两个条件只有配合使用才能精确匹配路由。/login 和 /login/123 两种路由都能匹配到
+		// 3. child.isWild 这是模糊匹配，优先级低于精确匹配
+		if (child.pattern != "" && child.pattern == fmt.Sprintf("/%s", pattern)) || child.isWild {
+			return child, params
 		}
 		root = child
 	}
-	return nil
+	return nil, nil
 }
 
 func (r *router) handle(ctx *Context) {
