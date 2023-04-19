@@ -56,7 +56,7 @@ func (r *router) addRouter(method string, pattern string, handlerFunc HandlerFun
 			}
 			root.children = append(root.children, child)
 		}
-		if child.isWild {
+		if (strings.Contains(child.part, ":") && strings.Contains(part, "*")) || strings.Contains(child.part, "*") && strings.Contains(part, ":") {
 			panic("web: 模糊匹配冲突")
 		}
 		root = child // 查找到了child，沿着child继续查找
