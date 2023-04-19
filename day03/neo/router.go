@@ -94,12 +94,14 @@ func (r *router) getRouter(method string, pattern string) (*node, map[string]str
 func (r *router) handle(ctx *Context) {
 	// 请求来了，需要匹配路由
 	log.Printf("Request %4s - %s", ctx.Method, ctx.URL)
-	n := r.getRouter(ctx.Method, ctx.URL)
+	n, params := r.getRouter(ctx.Method, ctx.URL)
 	if n == nil {
 		// 没有匹配到
 		ctx.String(http.StatusInternalServerError, "NOT FOUND")
 		return
 	}
+	// 保存请求参数到Context上下文中
+	ctx.Params = params
 	key := fmt.Sprintf("%s-%s", ctx.Method, n.pattern)
 	handlerFunc, ok := r.handlers[key]
 	if !ok {
