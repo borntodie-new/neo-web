@@ -15,6 +15,8 @@ type Context struct {
 	Method string
 	// 当此请求地址
 	URL string
+	// 请求参数
+	Params map[string]string
 }
 
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -23,6 +25,7 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		Req:    r,
 		Method: r.Method,
 		URL:    r.URL.Path,
+		Params: map[string]string{},
 	}
 }
 
@@ -68,8 +71,10 @@ func (c *Context) Query(key string) string {
 	return c.Req.URL.Query().Get(key)
 }
 
-// TODO Param 获取请求参数，请求参数这里需要使用到动态路由再获取
-//func (c *Context) Param(key string) string {}
+// Param 获取请求参数，请求参数这里需要使用到动态路由再获取
+func (c *Context) Param(key string) string {
+	return c.Params[key]
+}
 
 // PostForm 获取请求体数据
 // TODO 注意，根据用户传过来的数据格式的不同，获取数据的方式也是不同的。具体可以参考Gin
