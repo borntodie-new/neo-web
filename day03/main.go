@@ -24,5 +24,12 @@ func main() {
 			"name": ctx.Params("name"),
 		})
 	})
+	engine.GET("/hello/*filepath", func(ctx *neo.Context) {
+		// expect /hello/neo
+		ctx.JSON(http.StatusOK, neo.H{
+			"code": "200",
+			"name": ctx.Params("filepath"),
+		})
+	})
 	_ = engine.Run(":8080")
 }
