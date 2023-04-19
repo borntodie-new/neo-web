@@ -89,7 +89,13 @@ func (r *router) getRouter(method string, pattern string) (*node, map[string]str
 		}
 		// 将匹配到的带有:的路由添加到params中
 		if child.isWild {
-			params[child.part[1:]] = part
+			// 完成*的模糊匹配
+			value := part
+			if strings.HasPrefix(child.part, "*") {
+				index := strings.Index(pattern, part)
+				value = pattern[index:]
+			}
+			params[child.part[1:]] = value
 		}
 		// 1. child.pattern != ""这是精确匹配，但是还不够，有点缺陷
 		// 2. child.pattern == fmt.Sprintf("/%s", pattern) 这是精确匹配，搭配条件1才是完美
