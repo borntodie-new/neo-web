@@ -3,8 +3,11 @@ package neo
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 )
+
+const abortIndex int = math.MaxInt >> 1
 
 type Context struct {
 	// 原始的请求和响应对象
@@ -17,15 +20,21 @@ type Context struct {
 	URL string
 	// 请求参数 不需要暴露出去
 	params map[string]string
+
+	// 需要执行的视图函数列表【包含中间件和命中的视图函数】中间件>视图函数
+	handlers []HandlerFunc
+	index    int // 控制上面视图函数列表的执行顺序， 默认是-1
 }
 
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 	return &Context{
-		Writer: w,
-		Req:    r,
-		Method: r.Method,
-		URL:    r.URL.Path,
-		params: map[string]string{},
+		Writer:   w,
+		Req:      r,
+		Method:   r.Method,
+		URL:      r.URL.Path,
+		params:   map[string]string{},
+		handlers: []HandlerFunc{},
+		index:    -1, // 默认是-1
 	}
 }
 
@@ -80,4 +89,17 @@ func (c *Context) Params(key string) string {
 // TODO 注意，根据用户传过来的数据格式的不同，获取数据的方式也是不同的。具体可以参考Gin
 func (c *Context) PostForm(key string) string {
 	return c.Req.FormValue(key)
+}
+
+// Next 具体执行所有的视图函数
+func (c *Context) Next() {
+	c.index++
+	size := len(c.handlers)
+	for ; c.index < size; c.index++ {
+		c.handlers[c.index](c)
+	}
+}
+
+func (c *Context) Abort() {
+	c.index = abortIndex
 }

@@ -130,9 +130,11 @@ func (r *router) handle(ctx *Context) {
 		ctx.String(http.StatusInternalServerError, "NOT FOUND")
 		return
 	}
-	// 构建Context请求上下文
-	// 执行命中的视图函数
-	handlerFunc(ctx)
+	// 将命中的视图函数添加到当前上下文的视图函数列表中的最后一位
+	ctx.handlers = append(ctx.handlers, handlerFunc)
+	// 执行命中的视图函数，统一在上下文的Next方法中执行
+	ctx.Next()
+	//handlerFunc(ctx)
 }
 
 func newRouter() *router {
