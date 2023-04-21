@@ -64,7 +64,7 @@ func (r *router) addRouter(method string, pattern string, handlerFunc HandlerFun
 	root.pattern = pattern
 	key := fmt.Sprintf("%s-%s", method, pattern)
 	r.handlers[key] = handlerFunc
-	log.Printf("Add Router %4s - %s", method, pattern)
+
 }
 
 // 匹配路由
