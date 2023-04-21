@@ -7,29 +7,35 @@ import (
 
 func main() {
 	engine := neo.New()
-	engine.GET("/", func(ctx *neo.Context) {
-		ctx.HTML(http.StatusOK, "<h1>Hello Neo</h1>")
-	})
-	engine.GET("/hello", func(ctx *neo.Context) {
-		// expect /hello?name=neo
-		ctx.JSON(http.StatusOK, neo.H{
-			"code": "200",
-			"name": ctx.Query("name"),
+	v1 := engine.Group("/v1")
+	{
+		v1.GET("/user", func(ctx *neo.Context) {
+			ctx.String(http.StatusOK, "v1/user")
 		})
-	})
-	engine.GET("/hello/:name", func(ctx *neo.Context) {
-		// expect /hello/neo
-		ctx.JSON(http.StatusOK, neo.H{
-			"code": "200",
-			"name": ctx.Params("name"),
+		v1.POST("/order", func(ctx *neo.Context) {
+			ctx.String(http.StatusOK, "v1/order")
 		})
-	})
-	engine.GET("/assets/*filepath", func(ctx *neo.Context) {
-		// expect /hello/neo
-		ctx.JSON(http.StatusOK, neo.H{
-			"code": "200",
-			"name": ctx.Params("filepath"),
+		v1.DELETE("/cart", func(ctx *neo.Context) {
+			ctx.String(http.StatusOK, "v1/cart")
 		})
-	})
+		v1.PUT("/admin", func(ctx *neo.Context) {
+			ctx.String(http.StatusOK, "v1/admin")
+		})
+	}
+	v2 := engine.Group("/v2")
+	{
+		v2.GET("/user", func(ctx *neo.Context) {
+			ctx.String(http.StatusOK, "v1/user")
+		})
+		v2.POST("/order", func(ctx *neo.Context) {
+			ctx.String(http.StatusOK, "v1/order")
+		})
+		v2.DELETE("/cart", func(ctx *neo.Context) {
+			ctx.String(http.StatusOK, "v1/cart")
+		})
+		v2.PUT("/admin", func(ctx *neo.Context) {
+			ctx.String(http.StatusOK, "v1/admin")
+		})
+	}
 	_ = engine.Run(":8080")
 }
