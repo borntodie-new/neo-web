@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/borntodie-new/neo-web/neo/neo"
-	"html/template"
 	"net/http"
 )
 
@@ -14,20 +13,13 @@ func withTemplateEngine(t neo.TemplateEngine) neo.TemplateOption {
 }
 
 func main() {
-	engine := neo.New()
-	tpl, err := template.ParseGlob("./day06/template/*.gohtml")
-	if err != nil {
-		panic("Web 解析模板失败")
-	}
-	goTemplateEngine := neo.NewGoTemplateEngine(tpl)
-	neo.WithTemplateOnEngine(engine, withTemplateEngine(goTemplateEngine))
-	engine.GET("/login", func(ctx *neo.Context) {
-		ctx.HTML(http.StatusOK, "login.gohtml", nil)
+	engine := neo.Default()
+	engine.GET("/user", func(ctx *neo.Context) {
+		data := []string{"A", "B", "C"}
+		fmt.Println(data[1000]) // 绝对报错
 	})
-
-	// 测试静态文件
-	prefix := "file"
-	s := neo.NewStaticFile("./day06/static", prefix)
-	engine.GET(fmt.Sprintf("/assets/:%s", prefix), s.Handler())
+	engine.GET("/order", func(ctx *neo.Context) {
+		ctx.String(http.StatusOK, "order请求成功")
+	})
 	_ = engine.Run(":8080")
 }
