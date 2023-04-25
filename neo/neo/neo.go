@@ -16,6 +16,9 @@ type Engine struct {
 	router *router
 	*RouterGroup
 	groups []*RouterGroup // 保存所有的路由组信息，方便后期匹配路由组
+
+	// 模板引擎对象
+	T TemplateEngine
 }
 
 // 对外对接用户，对内对接Web框架
@@ -29,6 +32,8 @@ func (e *Engine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			ctx.handlers = append(ctx.handlers, group.middlewares...)
 		}
 	}
+	// 将模板引擎对象交给上下文
+	ctx.T = e.T
 	// 转发请求到框架
 	// 里面匹配命中的视图函数
 	e.router.handle(ctx)

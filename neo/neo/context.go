@@ -24,6 +24,8 @@ type Context struct {
 	// 需要执行的视图函数列表【包含中间件和命中的视图函数】中间件>视图函数
 	handlers []HandlerFunc
 	index    int // 控制上面视图函数列表的执行顺序， 默认是-1
+
+	T TemplateEngine // 模板引擎实例
 }
 
 func NewContext(w http.ResponseWriter, r *http.Request) *Context {
@@ -49,10 +51,14 @@ func (c *Context) Status(code int) {
 }
 
 // HTML 返回HTML格式数据
-func (c *Context) HTML(code int, html string) {
+func (c *Context) HTML(code int, tplName string, data any) {
+	html, err := c.T.Render(c.Req.Context(), tplName, data)
+	if err != nil {
+		panic("Web: 解析模板失败")
+	}
 	c.SetHeader("Context-Type", "text/html")
 	c.Status(code)
-	c.Writer.Write([]byte(html)) // 不用处理
+	_, _ = c.Writer.Write(html) // 不用处理
 }
 
 // JSON 返回JSON格式树
