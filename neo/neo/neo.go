@@ -111,3 +111,10 @@ func (group *RouterGroup) PUT(pattern string, handlerFunc HandlerFunc) {
 func (group *RouterGroup) Use(middlewares ...HandlerFunc) {
 	group.middlewares = append(group.middlewares, middlewares...)
 }
+
+// Default use Logger() & Recovery middlewares
+func Default() *Engine {
+	engine := New()
+	engine.Use(Recovery())
+	return engine
+}
