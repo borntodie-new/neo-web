@@ -12,6 +12,15 @@ type H map[string]string
 // HandlerFunc 视图函数签名
 type HandlerFunc func(ctx *Context)
 
+// 因为模板引擎不是一个很常用的功能，所以我们这里做成一个可选的功能
+type TemplateOption func(engine *Engine)
+
+func WithTemplateOnEngine(engine *Engine, opts ...TemplateOption) {
+	for _, opt := range opts {
+		opt(engine)
+	}
+}
+
 type Engine struct {
 	router *router
 	*RouterGroup
